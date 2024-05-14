@@ -14,37 +14,37 @@ def validate_json(x):
     except (TypeError, OverflowError):
         raise ValueError("Object is not JSON-compatible")
 
-def regex_filter(data, regex, path='@'):
+def regex_path_matcher(data, regex, path='@', elemwise=True):
     """
-    Filter JSON output using a regex pattern and an optional JMESPath path.
+    Match a regular expression to the JSON data on a JMESPath query.
+    We apply he regex matcher to the view of the data that the JMESPath
+    query returns, or if element-wise, we apply the matcher
+    to each sub-element of data, e.g., if we give a list of dictionaries,
+    we apply the matcher to each dictionary.
 
-    :param data: The JSON data to filter.
-    :param regex: The regex pattern to filter the output.
-    :param path: The JMESPath query to extract the view to apply
-                 the regex filter to. This works relative to the
-                 top-level elements of the output, e.g., if the output
-                 is a list of dictionaries, the regex query will be
-                 applied to each dictionary and if that dictionary
-                 has a path (denoted by the regex path) that matches
-                 the regex pattern, the dictionary will be included
-                 in the output. We serialize the view of the dictionary
-                 to a string before applying the regex pattern. We do
-                 something similar for a dictionary of key-value pairs,
-                 and likewise for a single value.
+    We serialize the JSON view of the data to a string before applying the
+    regex pattern.
+
+    :param data: The JSON data to match the regex pattern against.
+    :param regex: The regex pattern.
+    :param path: The JMESPath query that creates the view to apply
+                 the matcher to.
+    :param per_elem: Whether to apply the regex matcher to each element
+                     of data as opposed to the entire data object.
 
     :return: JSON (dict) object representing a filtered view of the top-level
                 JSON output.
     """
 
     validate_json(data)
-
     regex = re.compile(regex)
-    if isinstance(data, list):
-        return [m for m in data if regex.search(str(jmespath.search(path, m)))]
-    elif isinstance(data, dict):
-        return {k: v for k, v in data.items() if regex.search(str(jmespath.search(path, {k: v})))}
-    else:
-        return data if regex.search(str(jmespath.search(path, data))) else None
+    if elemwise:
+        if isinstance(data, list):
+            return [m for m in data if regex.search(str(jmespath.search(path, m)))]
+        elif isinstance(data, dict):
+            return {k: v for k, v in data.items() if regex.search(str(jmespath.search(path, {k: v})))}
+
+    return data if regex.search(str(jmespath.search(path, data))) else None
     
 def filter_paths(data, exclude_paths):
     """

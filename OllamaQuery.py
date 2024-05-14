@@ -7,7 +7,7 @@ class OllamaQuery:
         """
         Returns the schema of the OllamaQuery object.
         """
-        return ollama_utils.get_spec()
+        return ollama_utils.get_schema()
 
     def __init__(self, cache_path='~/.ollama_query_cache', cache_time=3600):
         """
@@ -40,48 +40,25 @@ class OllamaQuery:
     def search(self,
                query='[*]',
                regex=None,
-               regex_query='@',
+               regex_path='@',
                exclude_paths=[]):
         """
         Query/search/view the models using a JMESPath query, regex filter, and
         exclude keys.
 
         :param query: The JMESPath query to filter and provide a view of the models.
-        :param regex: The regex pattern to filter the output.
-        :param regex_query: The JMESPath query for the regex pattern. See
-                            `utils.regex_filter` for more information.
+        :param regex: The regex pattern to match against the output.
+        :param regex_path: The JMESPath query for the regex pattern. See
+                           `utils.regex_path_matcher` for more information.
         :param exclude_paths: The paths to exclude from the output.
     
         :return: JSON (dict) object representing some view of the models.
         """
         output = jmespath.search(query, self.models)
         if regex:
-            output = utils.regex_filter(output, regex, regex_query)
+            output = utils.regex_path_matcher(output, regex, regex_path)
 
         if exclude_paths:
             output = utils.filter_paths(output, exclude_paths)
 
         return output
-
-    # @staticmethod
-    # def regex_filter_old(output, regex):
-    #     """
-    #     Filter JSON output using a regex pattern.
-    #     """
-    #     if isinstance(output, list):
-    #         return [m for m in output if regex.search(json.dumps(m, separators=(',', ':')))]
-    #     elif isinstance(output, dict):
-    #         return {k: v for k, v in output.items() if regex.search(json.dumps(v, separators=(',', ':')))}
-    #     elif not regex.search(json.dumps(output)):
-    #         return None
-    #     return output
-
-        #  if exclude_paths:
-        #     if isinstance(output, list):
-        #         for o in output:
-        #             for key in exclude_keys:
-        #                 o.pop(key, None)
-        #     elif isinstance(output, dict):
-                
-        #         for key in exclude_keys:
-        #             output.pop(key, None)

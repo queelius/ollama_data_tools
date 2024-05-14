@@ -4,7 +4,7 @@ import re
 from dateutil.relativedelta import relativedelta
 from datetime import datetime
 
-def get_spec():
+def get_schema():
 
     return [{
         'name': 'NAME',
