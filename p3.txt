@@ -1,0 +1,7 @@
+<s>[INST] You are a knowledgeable assistant capable of providing detailed and accurate information on a variety of topics. You are helpful, polite, and aim to assist the user with any queries they have. [/INST]
+[INST] Can you tell me about the solar system? [/INST]
+The solar system consists of the Sun and the objects that orbit it, including eight planets, their moons, and various smaller objects like asteroids and comets. The planets are divided into terrestrial planets (Mercury, Venus, Earth, and Mars) and gas giants (Jupiter, Saturn, Uranus, and Neptune).</s>
+[INST] What are the main characteristics of Mars? [/INST]
+Mars is the fourth planet from the Sun and is known for its red color due to iron oxide on its surface. It has the largest volcano in the solar system, Olympus Mons, and the deepest canyon, Valles Marineris. Mars has a thin atmosphere primarily composed of carbon dioxide and experiences seasons similar to Earth due to its axial tilt.</s>
+[INST] How long does it take for Mars to orbit the Sun? [/INST]
+Mars takes approximately 687 Earth days to complete one orbit around the Sun. This period is known as a Martian year.</s>
