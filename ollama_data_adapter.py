@@ -1,98 +1,142 @@
+#!/usr/bin/env python3
+
+import re
 import ollama_data as od
 import subprocess
 import argparse
+from typing import Dict, Any, List
+import sys
+import logging
 
-def adapt_run(model_name, engine, prompt=None, options=None):
+def run(args: List[str]) -> str:
     """
-    The models are from Ollama, but these models are in GGUF format. Ollama
-    has information about their system messages, parameters, templates,
-    etc. This function adapts the run command to use the GGUF models and
-    Ollama information for other engines, like `llamacpp`.
+    Runs the given subprocess with the specified arguments.
+
+    Args:
+        args (List[str]): The arguments to pass to the subprocess.
+
+    Returns:
+        str: The output from the subprocess.
     """
+    process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    for line in iter(process.stdout.readline, b''):
+        print(line.decode(), end='')
 
-    if options is None:
-        options = {
-            'cache_path': '~/.ollama_data/cache',
-            'cache_time': '1 hour'
-        }
+    process.stdout.close()
+    process.wait()
 
-    ollama_data = od.OllamaData(cache_path=options["cache_path"],
-                                cache_time=options["cache_time"])
-        
-
-    model = ollama_data.get_model(model_name)
-    if engine not in engines:
-        raise ValueError(f"Engine '{engine}' not supported.")
-
-    engine = engines[engine]
-    result = engine["run"](model, prompt, engine["path"])
-    return result.stdout
+    if process.returncode != 0:
+        raise RuntimeError(f"Error: {process.stderr.read().decode()}")
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Adapts Ollama models for other engines (like `llamacpp`).')
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger()
+
+    script_name = sys.argv[0]
+    parser = argparse.ArgumentParser(
+        description='Adapts Ollama models for other engines (like `llamacpp`).',
+        formatter_class=argparse.RawTextHelpFormatter,
+        epilog="Example: " + script_name + " mistral llamacpp --engine-path /path/to/llamacpp --engine-args '--temp 0.5' '--n-gpu-layers 40' '--prompt \"[INST] You are a helpful AI assistant. [/INST]\"'")
     parser.add_argument('model', help='The model to run.', type=str, nargs='?')
-    parser.add_argument('engine', help='The engine to use.', type=str, nargs='?')
-    parser.add_argument('prompt', help='The prompt to use. If not specified, the model will be run interactively.', type=str, nargs='?')
-    parser.add_argument("--system-message", help="The system message to use (overrides any defaults).", type=str)
-    #parser.add_argument('add-engine', help='The path to the engine.', type=Dict)
-    parser.add_argument("--list-engines", help="List available engines.", action="store_true")
-    parser.add_argument("--list-models", help="List available models.", action="store_true")
+    parser.add_argument('engine', help='The engine to use.', type=str, choices=['llamacpp'], default='llamacpp', nargs='?')
+    parser.add_argument('--engine-path', help='The path to the engine.', type=str)
+    parser.add_argument('--list-engines', help='List available engines.', action='store_true')
+    parser.add_argument('--list-models', help='List available models.', action='store_true')
     parser.add_argument('--cache-path', help='The path to the cache file.', default='~/.ollama_data/cache')
-    parser.add_argument('--cache-time', help='The time in seconds to keep the cache file.', type=int, default=3600)
+    parser.add_argument('--cache-time', help='The time in seconds to keep the cache file.', type=str, default='1 day')
+    parser.add_argument('--engine-args', help='Arguments to pass through to the engine.', nargs='*', default=[], type=str)
+    parser.add_argument('--debug', help='Print debug information.', action='store_true')
+    parser.add_argument('--show-template', help='Show the template for the model.', action='store_true')
     args = parser.parse_args()
 
-    engines = {
-        'llamacpp': {
-            "run" : lambda model, prompt, path: subprocess.run([path, '--model', f"{model['path']}/{model['filename']}", f"--{prompt}"], capture_output=True, text=True),
-            "path": "llamagpu"
-        }
-    }
+    models = od.OllamaData(cache_path=args.cache_path, cache_time=args.cache_time)
 
-    print(args.model)
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+
+    def _llamacpp_args(options: Dict[str, Any]) -> List[str]:
+        """
+        Returns the arguments compatible with the llamacpp engine.
+
+        Args:
+            options (Dict[str, Any]): The options to use.
+
+        Returns:
+            List[str]: The arguments for the llamacpp engine.
+        """
+
+        if 'engine_path' not in options:
+            raise ValueError("Engine path is required.")
+        
+        args = [
+            options['engine_path'],
+            '--model',
+            options['model_path'],
+            '--instruct'
+        ]
+
+        if options['engine_args']:
+            for arg in options['engine_args']:
+                match = re.match(r'--\w+ ["\'].*["\']', arg)
+                if match:
+                    key, value = arg.split(' ', 1)
+                    value = value.strip('\'"')
+                    args.extend([key, value])
+                else:
+                    args.extend(arg.split())
+
+        return args
+
+    engines = {
+        'llamacpp': _llamacpp_args
+    }
 
     if args.list_engines:
         print("Available engines:")
-        for engine in engines:
-            print(f"  {engine}")
+        for engine in engines.keys():
+            print(f"  - {engine}")
         exit(0)
-
-    data = od.OllamaData(cache_path=args.cache_path,
-                            cache_time=args.cache_time)
 
     if args.list_models:
         print("Available models:")
-        for model in data.get_models():
-            print(f"  {model['name']}")
+        model_names = models.search(query='[*].name')
+        for model in model_names:
+            print(f"  - {model}")
+        exit(0)
+
+    if not args.model:
+        print("Specify a model to run or show the template for.")
+        exit(1)
+
+    model = models.get_model(args.model)
+    if not model:
+        print(f"Model '{args.model}' not found.")
+        exit(1)
+
+    if args.show_template:
+        print("The template for the model has the following forms:")
+        for line in model['template']:
+            print(f"  - {line}")
         exit(0)
 
     if args.engine not in engines:
         print(f"Engine '{args.engine}' not found.")
-        print("Available engines:")
-        for engine in engines:
-            print(f"  {engine}")
         exit(1)
 
-    if not args.model or not args.engine or not args.prompt:
-        parser.print_help()
-        exit(1)
-
-    if args.model not in od.get_models():
-        print(f"Model '{args.model}' not found.")
-        print("Available models:")
-        for model in data.get_models():
-            print(f"  {model['name']}")
-        exit(1)
+    options = {
+        'engine_path': args.engine_path,
+        'model_path': model['weights'][0]['file_path'],
+        'engine_args': args.engine_args,
+    }
 
     try:
-        result = adapt_run(model_name=args.model,
-                           engine=args.engine,
-                           prompt=args.prompt,
-                           options={'cache_path': args.cache_path, 'cache_time': args.cache_time})
-        print(result)
+        run_args = engines[args.engine](options)
+
+        logger.debug(f"Running model '{args.model}' with engine '{args.engine}' using the following engine-args:")
+        for arg in run_args:
+            logger.debug(" - " + arg)
+        run(run_args)
     except Exception as e:
         print(f"Error: {e}")
         exit(1)
-
-
-    

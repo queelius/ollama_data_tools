@@ -17,7 +17,6 @@ def get_schema() -> List[Dict[str, Any]]:
         'system_message': '<list[str]>',
         'total_weights_size': '<float>',
         'total_weights_size_units': '<str>',
-        'last_modified': '<str>',
         'template': '<list[str]>',
         'modelfile': '<str|None>',
         'last_modified': '<str>',
