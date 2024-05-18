@@ -9,8 +9,8 @@
 Clone the repository and install the necessary dependencies:
 
 ```sh
-git clone <repository-url>
-cd <repository-directory>
+git clone https://github.com/queelius/ollama_data_tools.git
+cd ollama_data_tools
 pip install -r requirements.txt
 ```
 
@@ -68,26 +68,26 @@ Here is an example of how to use the `OllamaData` class programmatically:
 import ollama_data as od
 
 # Initialize the OllamaData object
-ollama_data = od.OllamaData(cache_path='~/.ollama_data/cache', cache_time='1 day')
+models = od.OllamaData(cache_path='~/.ollama_data/cache', cache_time='1 day')
 
 # Get the schema of the OllamaData object
-schema = ollama_data.get_schema()
-print("Schema:", schema)
+print("Schema:", models.get_schema())
 
 # List all models
-models = ollama_data.get_models()
-print("Models:", models)
+print("Models:", ollama_data.get_models())
 
 # Get a specific model by name
-model = ollama_data.get_model('mistral:latest')
-print("Specific Model:", model)
+model = models.get_model('mistral')
+print("Specific Model:", model['name'])
 
 # Search models using a JMESPath query
-query_result = ollama_data.search(query="[*].{name: name, size: total_weights_size}")
+query_result = models.search(query="[*].{name: name, size: total_weights_size}")
 print("Query Result:", query_result)
 
 # Search models using a JMESPath query and regex filter
-query_regex_result = ollama_data.search(query="[*].{name: name, size: total_weights_size}", regex="mistral", regex_path="name")
+query_regex_result = models.search(
+    query="[*].{name: name, size: total_weights_size}",
+    regex="mistral", regex_path="name")
 print("Query Regex Result:", query_regex_result)
 ```
 
@@ -117,25 +117,25 @@ The `ollama_data_query.py` script allows users to search and filter Ollama model
 To perform a JMESPath query:
 
 ```sh
-./ollama_data_query.py "max_by(@, &total_weights_size).{name: name, size: total_weights_size}"
+ollama_data_query "max_by(@, &total_weights_size).{name: name, size: total_weights_size}"
 ```
 
 To use a regular expression to filter results:
 
 ```sh
-./ollama_data_query.py --regex "mistral:latest" --regex-path name "[*].{name: name, size: total_weights_size}"
+ollama_data_query --regex "mistral:latest" --regex-path name "[*].{name: name, size: total_weights_size}"
 ```
 
 To pipe a query from a file or another command:
 
 ```sh
-cat query.txt | ./ollama_data_query.py
+cat query.txt | ollama_data_query
 ```
 
 Using regex and regex-path with a piped query:
 
 ```sh
-echo "[*].{info: { name: name, other: weights}}" | ./ollama_data_query.py --regex 14f2 --regex-path "info.other[*].file_name"
+echo "[*].{info: { name: name, other: weights}}" | ollama_data_query --regex 14f2 --regex-path "info.other[*].file_name"
 ```
 
 ### Examples
