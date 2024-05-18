@@ -12,6 +12,7 @@ Clone the repository and install the necessary dependencies:
 git clone https://github.com/queelius/ollama_data_tools.git
 cd ollama_data_tools
 pip install -r requirements.txt
+pip install -e .
 ```
 
 ## Ollama Data Toolkit
@@ -143,30 +144,30 @@ echo "[*].{info: { name: name, other: weights}}" | ollama_data_query --regex 14f
 #### Query for the Largest Model
 
 ```sh
-./ollama_data_query.py "max_by(@, &total_weights_size).{name: name, size: total_weights_size}"
+ollama_data_query "max_by(@, &total_weights_size).{name: name, sz: total_weights_size}"
 ```
 
 #### Filter Models Using Regex
 
 ```sh
-./ollama_data_query.py --regex "mistral:latest" --regex-path name "[*].{name: name, size: total_weights_size}"
+ollama_data_query --regex "mistral|llama3" --regex-path name "[*].{name: name, size: total_weights_size}"
 ```
 
 #### Pipe a Query from a File
 
 ```sh
-cat query.txt | ./ollama_data_query.py
+cat query.txt | ollama_data_query
 ```
 
 #### Use Regex with a Piped Query
 
 ```sh
-echo "[*].{info: { name: name, other: weights}}" | ./ollama_data_query.py --regex 14f2 --regex-path "info.other[*].file_name"
+echo "[*].{info: { name: name, other: weights}}" | ollama_data_query --regex 14f2 --regex-path "info.other[*].file_name"
 ```
 
 ## Ollama Data Export
 
-The `ollama_data_export.py` script allows users to export Ollama models to a specified directory. This tool creates soft links for the model weights and saves the model metadata in the output directory.
+The `ollama_data_export` script allows users to export Ollama models to a specified directory. This tool creates soft links for the model weights and saves the model metadata in the output directory.
 
 ### Features
 
@@ -189,13 +190,13 @@ The `ollama_data_export.py` script allows users to export Ollama models to a spe
 To export specified models to a directory:
 
 ```sh
-./ollama_data_export.py --models model1,model2 --outdir /path/to/export
+ollama_data_export --models model1,model2 --outdir /path/to/export
 ```
 
 To export all models to a directory:
 
 ```sh
-./ollama_data_export.py /path/to/export
+ollama_data_export /path/to/export
 ```
 
 ### Examples
@@ -203,30 +204,30 @@ To export all models to a directory:
 #### Export Specified Models
 
 ```sh
-./ollama_data_export.py --models mistral,llama3 --outdir /path/to/export
+ollama_data_export --models mistral,llama3 --outdir /path/to/export
 ```
 
 #### Export All Models
 
 ```sh
-./ollama_data_export.py /path/to/export --ourdir /path/to/export
+ollama_data_export --ourdir /path/to/export
 ```
 
 #### Enable Debug Logging
 
 ```sh
-./ollama_data_export.py --models mistral --outdir /path/to/export --debug
+ollama_data_export --models mistral --outdir /path/to/export --debug
 ```
 
 #### Specify Hash Length for Soft Links
 
 ```sh
-./ollama_data_export.py --models mistral:latest --outdir /path/to/export --hash-length 2
+ollama_data_export --models mistral --outdir /path/to/export --hash-length 2
 ```
 
 ## Ollama Data Adapter
 
-The `ollama_data_adapter.py` script adapts Ollama models for use with other inference engines, such as `llamacpp`. This tool is designed to reduce friction when experimenting with local LLM models and integrates with other tools for viewing, searching, and exporting Ollama models.
+The `ollama_data_adapter` script adapts Ollama models for use with other inference engines, such as `llamacpp`. This tool is designed to reduce friction when experimenting with local LLM models and integrates with other tools for viewing, searching, and exporting Ollama models.
 
 ### Features
 
@@ -254,21 +255,19 @@ The `ollama_data_adapter.py` script adapts Ollama models for use with other infe
 To list all available engines:
 
 ```sh
-./ollama_data_adapter.py --list-engines
+ollama_data_adapter --list-engines
 ```
 
 To list all available models:
 
 ```sh
-./ollama_data_adapter.py --list-models
+ollama_data_adapter --list-models
 ```
 
 To show the template for a specific model:
 
 ```sh
-
-
-./ollama_data_adapter.py mistral --show-template
+ollama_data_adapter mistral --show-template
 
 ## The template for the model has the following forms:
 ## - [INST] {{ .System }} {{ .Prompt }} [/INST]
@@ -277,7 +276,7 @@ To show the template for a specific model:
 To run a specific model with an engine:
 
 ```sh
-./ollama_data_adapter.py <model> <engine> --engine-path <path-to-engine> --engine-args '<additional-arguments>'
+ollama_data_adapter model engine --engine-path /path/to/engine --engine-args 'arg1' ... 'argn'
 ```
 
 ### Example
@@ -287,7 +286,7 @@ it is available in your `Ollama` registry), you might use the following
 arguments:
 
 ```sh
-./ollama_data_adapter.py
+ollama_data_adapter
     mistral                          # Also matches `mistral:latest`
     llamacpp                         # Use the llamacpp engine
     --engine-path /path/to/llamacpp  # Path to engine, e.g. ~/llamacpp/main
@@ -297,13 +296,13 @@ arguments:
 ```
 
 The `--prompt` engine pass-through argument follows the template shown by
-the `./ollama_data_adapter.py mistral --show-template`.
+the `ollama_data_adapter mistral --show-template`.
 
 We place a lot of burden on the end-user to get the formatting right. These
 models are very sensitive to how you prompt them, so some experimentation
 may be necessary.
 
-You may also want to use `./ollama_data_query.py` to show the system message
+You may also want to use `ollama_data_query` to show the system message
 or other properties of a model, so that you can further customize the
 pass-through arguments to better fit its training data.
 
