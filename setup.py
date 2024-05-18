@@ -9,7 +9,6 @@ setup(
     url='https://github.com/queelius/ollama_data_tools',
     packages=find_packages(),
     install_requires=[
-        'ollama_data',
         # other dependencies...
     ],
     entry_points={

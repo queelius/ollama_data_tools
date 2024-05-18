@@ -5,7 +5,7 @@ import argparse
 import os
 import sys
 import json
-import ollama_data as od
+from ollama_data_tools import ollama_data as od
 
 def get_args():
     """

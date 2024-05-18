@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import re
-import ollama_data as od
+from ollama_data_tools import ollama_data as od
 import subprocess
 import argparse
 from typing import Dict, Any, List
@@ -28,8 +28,7 @@ def run(args: List[str]) -> str:
     if process.returncode != 0:
         raise RuntimeError(f"Error: {process.stderr.read().decode()}")
 
-if __name__ == "__main__":
-
+def main():
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger()
 
@@ -140,3 +139,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"Error: {e}")
         exit(1)
+
+if __name__ == "__main__":
+    main()
+

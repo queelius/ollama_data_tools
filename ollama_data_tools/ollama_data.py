@@ -1,8 +1,8 @@
 import jmespath
-import ollama_data_utils as odu
-import regex_path_matcher
+from ollama_data_tools import ollama_data_utils as odu
+from ollama_data_tools import regex_path_matcher
 from typing import List, Dict, Any, Optional
-import json_cache as cm
+from ollama_data_tools import json_cache as cm
 
 class OllamaData:
     @staticmethod

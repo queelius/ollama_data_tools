@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import os
-import ollama_data as od
+from ollama_data_tools import ollama_data as od
 import subprocess
 import logging
 import argparse

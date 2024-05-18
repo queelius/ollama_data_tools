@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 from datetime import datetime
 from typing import Dict, List, Any
-from conversion_tools import parse_duration, convert_bytes, get_file_info
+from ollama_data_tools import conversion_tools as ct
 
 def get_schema() -> List[Dict[str, Any]]:
     """
@@ -72,14 +72,14 @@ def get_models(exclude_keys = None) -> List[Dict[str, Any]]:
         parts = line.split()
         model_name = parts[0]
         #weights_size_gb = convert_bytes(float(parts[2]), parts[3], 'GB')
-        dur, delta = parse_duration(parts[4] + ' ' + parts[5])
+        dur, delta = ct.parse_duration(parts[4] + ' ' + parts[5])
         
         #weight_info['size_units'] = 'GB'
 
         weight_infos = []
         weight_paths = get_weights_path(model_name)
         for weight_path in weight_paths:
-            weight_info = get_file_info(weight_path)
+            weight_info = ct.get_file_info(weight_path)
             match = re.search(r'.*/sha256-([a-f0-9]{64})',
                       str(weight_path), re.IGNORECASE)
             weight_info['hash'] = match.group(1) if match else None
@@ -104,7 +104,7 @@ def get_models(exclude_keys = None) -> List[Dict[str, Any]]:
             'system_message': get_model_system(model_name),
             'template': get_model_template(model_name),
             'modelfile': get_modelfile(model_name),
-            'total_weights_size': convert_bytes(total_weights_size, 'B', 'GB'),
+            'total_weights_size': ct.convert_bytes(total_weights_size, 'B', 'GB'),
             'total_weights_size_units': 'GB',
             #'total_weights_size_alternate': weights_size_gb,
             'weights': weight_infos
