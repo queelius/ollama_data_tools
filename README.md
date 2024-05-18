@@ -3,7 +3,6 @@
 ## Requirements
 
 - Python 3.x
-- `ollama_data` module
 
 ## Installation
 
