@@ -318,4 +318,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 Alex Towell
 - Email: lex@metafunctor.com
+- Twitter: [@queelius](https://twitter.com/queelius)
+- Website: [metafunctor](https://metafunctor.com)
 - GitHub: [@queelius](https://github.com/queelius)
