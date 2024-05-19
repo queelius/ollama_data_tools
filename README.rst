@@ -1,18 +1,6 @@
-===============
-Ollama Data Tools
-===============
+# Ollama Data Tools
 
-
-.. image:: https://img.shields.io/pypi/v/ollama_data_tools.svg
-        :target: https://pypi.python.org/pypi/ollama_data_tools
-
-.. image:: https://img.shields.io/travis/queelius/ollama_data_tools.svg
-        :target: https://travis-ci.com/queelius/ollama_data_tools
-
-.. image:: https://readthedocs.org/projects/ollama_data_tools/badge/?version=latest
-        :target: https://ollama_data_tools.readthedocs.io/en/latest/?version=latest
-        :alt: Documentation Status
-
+[![PyPI version](https://img.shields.io/pypi/v/ollama_data_tools.svg)](https://pypi.python.org/pypi/ollama_data_tools)
 
 ## Requirements
 
