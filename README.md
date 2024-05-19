@@ -1,12 +1,6 @@
 # Ollama Data Tools
 
-[![PyPI version](https://img.shields.io/pypi/v/ollama_data_tools.svg)](https://pypi.python.org/pypi/ollama_data_tools)
-
-
 ![PyPI version](https://img.shields.io/pypi/v/ollama_data_tools.svg)
-
-[Check it on PyPI](https://pypi.python.org/pypi/ollama_data_tools)
-
 
 ## Requirements
 
